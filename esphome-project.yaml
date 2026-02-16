@@ -427,8 +427,9 @@ interval:
           const int BED_TEXT_X    =  160, BED_TEXT_Y    = -10;
           
           lv_obj_align(id(lbl_nozzle_icon), LV_ALIGN_CENTER, NOZZLE_ICON_X, NOZZLE_ICON_Y);
-          lv_obj_align(id(lbl_nozzle),      LV_ALIGN_CENTER, NOZZLE_TEXT_X, NOZZLE_TEXT_Y);
-          lv_obj_align(id(lbl_nozzle_l),    LV_ALIGN_CENTER, NOZZLE_TEXT2_X, NOZZLE_TEXT2_Y);
+          // swapped: nozzle_l gets the first nozzle text position, nozzle gets the second
+          lv_obj_align(id(lbl_nozzle_l),    LV_ALIGN_CENTER, NOZZLE_TEXT_X, NOZZLE_TEXT_Y);
+          lv_obj_align(id(lbl_nozzle),      LV_ALIGN_CENTER, NOZZLE_TEXT2_X, NOZZLE_TEXT2_Y);
           lv_obj_align(id(lbl_bed_icon),    LV_ALIGN_CENTER, BED_ICON_X, BED_ICON_Y);
           lv_obj_align(id(lbl_bed),         LV_ALIGN_CENTER, BED_TEXT_X, BED_TEXT_Y);
 
@@ -446,8 +447,8 @@ interval:
           lv_obj_align(id(lbl_pct), LV_ALIGN_CENTER, 0, -(RING_SIZE/2 - PCT_MARGIN_FROM_TOP));
           lv_obj_move_foreground(id(lbl_pct));
 
-          // (Optional) Innerhalb von Page 1 die vier Labels nach vorn
-          for (auto obj : { id(lbl_nozzle_icon), id(lbl_nozzle), id(lbl_bed_icon), id(lbl_bed) }) {
+          // (Optional) Innerhalb von Page 1 die Labels nach vorn (inkl. nozzle_l)
+          for (auto obj : { id(lbl_nozzle_icon), id(lbl_nozzle_l), id(lbl_nozzle), id(lbl_bed_icon), id(lbl_bed) }) {
             lv_obj_move_foreground(obj);
           }
           // page 2
@@ -481,9 +482,7 @@ interval:
             auto set_page1_visible = [&](bool visible){
               if (p1_shown == visible) return;  // Hysterese: nur toggeln, wenn nötig
               for (auto o : { id(lbl_status), id(lbl_layer), id(row_remaining),
-                              id(lbl_nozzle_icon), id(lbl_nozzle),
-                              id(lbl_bed_icon),    id(lbl_bed),
-                              id(img_logo_small) }) {
+                              id(lbl_nozzle_icon), id(lbl_nozzle_l), id(lbl_nozzle), id(lbl_bed_icon), id(lbl_bed) }) {
                 if (visible) lv_obj_clear_flag(o, LV_OBJ_FLAG_HIDDEN);
                 else         lv_obj_add_flag(o,   LV_OBJ_FLAG_HIDDEN);
               }
@@ -523,9 +522,7 @@ interval:
           }, LV_EVENT_ALL, nullptr);
           {
             for (auto o : { id(lbl_status), id(lbl_layer), id(row_remaining),
-                            id(lbl_nozzle_icon), id(lbl_nozzle),
-                            id(lbl_bed_icon),    id(lbl_bed),
-                            id(img_logo_small) }) {
+                            id(lbl_nozzle_icon), id(lbl_nozzle_l), id(lbl_nozzle), id(lbl_bed_icon), id(lbl_bed) }) {
               lv_obj_clear_flag(o, LV_OBJ_FLAG_HIDDEN);
             }
           }
@@ -939,7 +936,7 @@ interval:
             }
             return std::string(" --°C");
       - lambda: |-
-          lv_obj_set_style_text_color(id(lbl_nozzle), lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+          lv_obj_set_style_text_color(id(lbl_nozzle_l), lv_color_hex(0xFFFFFF), LV_PART_MAIN);
 
       - lvgl.label.update:
           id: lbl_bed
