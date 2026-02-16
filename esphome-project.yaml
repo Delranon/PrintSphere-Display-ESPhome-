@@ -226,7 +226,22 @@ text_sensor:
               u = std::string("${homeassistant_url}") + u;
             return u;
           update: true
-                    
+  - platform: homeassistant
+    id: ams1_color
+    entity_id: sensor.printfactory_ams_1_tray_1
+    attribute: Color
+    internal: true
+  - platform: homeassistant
+    id: ams1_name
+    entity_id: sensor.printfactory_ams_1_tray_1
+    attribute: Name
+    internal: true
+  - platform: homeassistant
+    id: ams1_remaining
+    entity_id: sensor.printfactory_ams_1_tray_1
+    attribute: Remaining filament
+    internal: true
+
 binary_sensor:
   - platform: homeassistant
     id: hms_errors
@@ -269,7 +284,25 @@ lvgl:
         bg_color: 0x000000
         bg_opa: 0
         border_opa: 0
+    - obj:
+      id: ams1_swatch
+      width: 40
+      height: 24
+      radius: 6
+      bg_color: 0x888888
+      bg_opa: 255
 
+    - label:
+      id: ams1_name_label
+      text: "--"
+      text_font: font_dosis_20
+      text_color: 0xFFFFFF
+    - label:
+      id: ams1_rem_label
+      text: "--"
+      text_font: font_dosis_20
+      text_color: 0xDDDDDD  
+  
         # ---- PROGRESS RING ----
     - arc:
         id: arc_main
@@ -394,6 +427,27 @@ interval:
           lv_obj_set_style_bg_opa(page2, LV_OPA_TRANSP, LV_PART_MAIN);
           lv_obj_set_style_border_opa(page2, LV_OPA_TRANSP, LV_PART_MAIN);
           lv_obj_set_pos(page2, W, 0);
+
+          // pager page3 erstellen
+          lv_obj_t* page3 = lv_obj_create(pager);
+          lv_obj_set_size(page3, W, H);
+          lv_obj_set_style_bg_opa(page3, LV_OPA_TRANSP, LV_PART_MAIN);
+          lv_obj_set_style_border_opa(page3, LV_OPA_TRANSP, LV_PART_MAIN);
+          lv_obj_set_pos(page3, 2*W, 0);  // Seite 3 rechts von page2
+
+          // AMS1 Widgets parenten
+          lv_obj_set_parent(id(ams1_swatch), page3);
+          lv_obj_set_parent(id(ams1_name_label), page3);
+          lv_obj_set_parent(id(ams1_rem_label), page3);
+
+          // Positionierung (Grid-artig)
+          const int P3_X_LEFT = -120;
+          const int P3_Y0 = -120;
+          const int P3_Y_STEP = 46;
+
+          lv_obj_align(id(ams1_swatch), LV_ALIGN_CENTER, P3_X_LEFT,      P3_Y0);
+          lv_obj_align(id(ams1_name_label), LV_ALIGN_CENTER, P3_X_LEFT + 60, P3_Y0);
+          lv_obj_align(id(ams1_rem_label), LV_ALIGN_CENTER,  P3_X_LEFT + 60, P3_Y0 + P3_Y_STEP);
 
           // page 1 content
           lv_obj_set_parent(id(lbl_status), page1);
@@ -1008,3 +1062,34 @@ interval:
             col = ( (p > 0 && p < 100) || ps == "running" || ps == "prepare" ) ? 0x00FF00 : 0x666666;
           }
           id(ui_col_target) = col;
+
+      - interval: 1s
+    then:
+    - lambda: |-
+        // AMS1 Swatch Color
+        if (id(ams1_color).has_state()) {
+          std::string c = id(ams1_color).state;
+          if (c.size() >= 7 && c[0] == '#') {
+            std::string hex = c.substr(1,6);
+            uint32_t col = (uint32_t)strtoul(hex.c_str(), nullptr, 16);
+            lv_obj_set_style_bg_color(id(ams1_swatch), lv_color_hex(col), LV_PART_MAIN);
+          } else {
+            lv_obj_set_style_bg_color(id(ams1_swatch), lv_color_hex(0x888888), LV_PART_MAIN);
+          }
+        } else {
+          lv_obj_set_style_bg_color(id(ams1_swatch), lv_color_hex(0x444444), LV_PART_MAIN);
+        }
+
+        // AMS1 Name
+        if (id(ams1_name).has_state()) {
+          lv_label_set_text(id(ams1_name_label), id(ams1_name).state.c_str());
+        } else {
+          lv_label_set_text(id(ams1_name_label), "--");
+        }
+
+        // AMS1 Remaining Filament
+        if (id(ams1_remaining).has_state()) {
+          lv_label_set_text(id(ams1_rem_label), id(ams1_remaining).state.c_str());
+        } else {
+          lv_label_set_text(id(ams1_rem_label), "--");
+        }
