@@ -1,3 +1,10 @@
+Fork of the awesome PrintSphere-Display (ESPHome + LVGL, Round AMOLED) Project and modified for the H2C 
+with dual Nozzle and a few tweaks (remaining time)
+
+Will update with chamber heat temperature and so on
+
+Original Readme:
+
 # PrintSphere-Display (ESPHome + LVGL, Round AMOLED)
 
 A 🟢 ESP32-S3 display for Bambu Lab / Home Assistant print status:
