@@ -214,7 +214,7 @@ text_sensor:
     internal: true
   - platform: homeassistant
     id: ha_img_url
-    entity_id: image.${bambulab_printer}_titelbild
+    entity_id: image.${bambulab_printer}_cover_image #_titelbild in deutschem Home Assistant
     attribute: entity_picture
     internal: true
     on_value:
