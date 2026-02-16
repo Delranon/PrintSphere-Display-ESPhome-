@@ -261,21 +261,21 @@ lvgl:
   widgets:
     - image:
         id: img_preview
-        src: ha_preview  
+        src: ha_preview
         antialias: true
         radius: 12
     - image:
         id: img_logo_small
         src: img_bambu_logo
         antialias: true
-        radius: 8   
+        radius: 8
     - obj:
         id: img_mask
-        width: 420         # passend zu online_image.resize
+        width: 420
         height: 420
-        radius: 210        # Kreis
+        radius: 210
         bg_opa: 0
-        border_opa: 0     
+        border_opa: 0
     - obj:
         id: backdrop
         width: 466
@@ -285,25 +285,22 @@ lvgl:
         bg_opa: 0
         border_opa: 0
     - obj:
-      id: ams1_swatch
-      width: 40
-      height: 24
-      radius: 6
-      bg_color: 0x888888
-      bg_opa: 255
-
+        id: ams1_swatch
+        width: 40
+        height: 24
+        radius: 6
+        bg_color: 0x888888
+        bg_opa: 100%
     - label:
-      id: ams1_name_label
-      text: "--"
-      text_font: font_dosis_20
-      text_color: 0xFFFFFF
+        id: ams1_name_label
+        text: "--"
+        text_font: font_dosis_20
+        text_color: 0xFFFFFF
     - label:
-      id: ams1_rem_label
-      text: "--"
-      text_font: font_dosis_20
-      text_color: 0xDDDDDD  
-  
-        # ---- PROGRESS RING ----
+        id: ams1_rem_label
+        text: "--"
+        text_font: font_dosis_20
+        text_color: 0xDDDDDD
     - arc:
         id: arc_main
         align: center
@@ -325,21 +322,75 @@ lvgl:
           arc_width: 24
           arc_color: 0x00FF00
           arc_rounded: true
-
-    # --- labels etc. (unchanged defs) ---
-    - label: { id: lbl_pct, text: "--%", align: center, x: 0, y: -170, text_color: 0xFFFFFF, text_font: font_dosis_40 }
-    - label: { id: lbl_layer, text: "Layer: -- / --", text_color: 0xDDDDDD, text_font: font_dosis_32 }
-    - label: { id: lbl_status, text: "Waiting for Data...", text_color: 0xFFFFFF, text_font: font_dosis_32 }
-    - label: { id: lbl_nozzle_icon, text: "\U000F0E5B", text_color: 0xFFFFFF, text_font: font_mdi_40 }
-    - label: { id: lbl_nozzle_R,    text: "R",        text_color: 0xFFFFFF, text_font: font_dosis_32 }
-    - label: { id: lbl_nozzle_L,    text: "L",        text_color: 0xFFFFFF, text_font: font_dosis_32 }
-    - label: { id: lbl_nozzle,      text: " --°C",    text_color: 0xFFFFFF, text_font: font_dosis_32 }
-    - label: { id: lbl_nozzle_l,    text: " --°C",    text_color: 0xFFFFFF, text_font: font_dosis_32 }  
-    - label: { id: lbl_bed_icon,    text: "\U000F185B", text_color: 0xFFFFFF, text_font: font_mdi_40 }
-    - label: { id: lbl_bed,    text: " --°C", text_color: 0xFFFFFF, text_font: font_dosis_32 }
-    - label: { id: lbl_chamber_icon, text: "\U000F01A7", text_color: 0xFFFFFF, text_font: font_mdi_40 }
-    - label: { id: lbl_chamber,    text: " --°C", text_color: 0xFFFFFF, text_font: font_dosis_32 }
-    - label: { id: page2_note, text: "Preview deaktiviert", align: center, text_color: 0x888888, text_font: font_dosis_20 }
+    - label:
+        id: lbl_pct
+        text: "--%"
+        align: center
+        x: 0
+        y: -170
+        text_color: 0xFFFFFF
+        text_font: font_dosis_40
+    - label:
+        id: lbl_layer
+        text: "Layer: -- / --"
+        text_color: 0xDDDDDD
+        text_font: font_dosis_32
+    - label:
+        id: lbl_status
+        text: "Waiting for Data..."
+        text_color: 0xFFFFFF
+        text_font: font_dosis_32
+    - label:
+        id: lbl_nozzle_icon
+        text: "\U000F0E5B"
+        text_color: 0xFFFFFF
+        text_font: font_mdi_40
+    - label:
+        id: lbl_nozzle_R
+        text: "R"
+        text_color: 0xFFFFFF
+        text_font: font_dosis_32
+    - label:
+        id: lbl_nozzle_L
+        text: "L"
+        text_color: 0xFFFFFF
+        text_font: font_dosis_32
+    - label:
+        id: lbl_nozzle
+        text: " --°C"
+        text_color: 0xFFFFFF
+        text_font: font_dosis_32
+    - label:
+        id: lbl_nozzle_l
+        text: " --°C"
+        text_color: 0xFFFFFF
+        text_font: font_dosis_32
+    - label:
+        id: lbl_bed_icon
+        text: "\U000F185B"
+        text_color: 0xFFFFFF
+        text_font: font_mdi_40
+    - label:
+        id: lbl_bed
+        text: " --°C"
+        text_color: 0xFFFFFF
+        text_font: font_dosis_32
+    - label:
+        id: lbl_chamber_icon
+        text: "\U000F01A7"
+        text_color: 0xFFFFFF
+        text_font: font_mdi_40
+    - label:
+        id: lbl_chamber
+        text: " --°C"
+        text_color: 0xFFFFFF
+        text_font: font_dosis_32
+    - label:
+        id: page2_note
+        text: "Preview deaktiviert"
+        align: center
+        text_color: 0x888888
+        text_font: font_dosis_20
     - obj:
         id: row_remaining
         bg_opa: 0
@@ -759,7 +810,8 @@ interval:
           id: arc_main
           value: !lambda |-
             // während filament_loading/unloading NICHT updaten (Animation behält Kontrolle)
-            auto lower = [](std::string s){ for (auto &c : s) c = (char)tolower((unsigned char)c); return s; };
+            auto lower = [](std::string s){ for (auto &c : s) c = (char)tolower((unsigned char)c); return s;
+            };
             if (id(current_stage).has_state()) {
               std::string st = lower(id(current_stage).state);
               if (st.find("filament_loading") != std::string::npos || st.find("filament_unloading") != std::string::npos) {
@@ -925,7 +977,8 @@ interval:
       - lvgl.label.update:
           id: lbl_remaining
           text: !lambda |-
-            auto lower = [](std::string s){ for (auto &c : s) c = (char)tolower((unsigned char)c); return s; };
+            auto lower = [](std::string s){ for (auto &c : s) c = (char)tolower((unsigned char)c); return s;
+            };
             int p = id(print_progress).has_state() ? (int) id(print_progress).state : 0;
             if (p < 0) p = 0; if (p > 100) p = 100;
             std::string ps = id(print_status).has_state() ? lower(id(print_status).state) : "";
@@ -1033,7 +1086,8 @@ interval:
 
       # Farbe je nach "current_stage"/Status → Ziel-Farbe für den Printing-Blend
       - lambda: |-
-          auto lower = [](std::string s){ for (auto &c : s) c = (char)tolower((unsigned char)c); return s; };
+          auto lower = [](std::string s){ for (auto &c : s) c = (char)tolower((unsigned char)c); return s;
+          };
           std::string stage = id(current_stage).has_state() ? lower(id(current_stage).state) : "";
           std::string ps    = id(print_status).has_state()  ? lower(id(print_status).state)  : "";
           int p = id(print_progress).has_state() ? (int) id(print_progress).state : id(last_prog);
@@ -1063,33 +1117,19 @@ interval:
           }
           id(ui_col_target) = col;
 
-      - interval: 1s
+  - interval: 1s
     then:
-    - lambda: |-
-        // AMS1 Swatch Color
-        if (id(ams1_color).has_state()) {
-          std::string c = id(ams1_color).state;
-          if (c.size() >= 7 && c[0] == '#') {
-            std::string hex = c.substr(1,6);
-            uint32_t col = (uint32_t)strtoul(hex.c_str(), nullptr, 16);
-            lv_obj_set_style_bg_color(id(ams1_swatch), lv_color_hex(col), LV_PART_MAIN);
+      - lambda: |-
+          // AMS1 Swatch Color
+          if (id(ams1_color).has_state()) {
+            std::string c = id(ams1_color).state;
+            if (c.size() >= 7 && c[0] == '#') {
+              std::string hex = c.substr(1,6);
+              uint32_t col = (uint32_t)strtoul(hex.c_str(), nullptr, 16);
+              lv_obj_set_style_bg_color(id(ams1_swatch), lv_color_hex(col), LV_PART_MAIN);
+            } else {
+              lv_obj_set_style_bg_color(id(ams1_swatch), lv_color_hex(0x888888), LV_PART_MAIN);
+            }
           } else {
-            lv_obj_set_style_bg_color(id(ams1_swatch), lv_color_hex(0x888888), LV_PART_MAIN);
+            lv_obj_set_style_bg_color(id(ams1_swatch), lv_color_hex(0x444444), LV_PART_MAIN);
           }
-        } else {
-          lv_obj_set_style_bg_color(id(ams1_swatch), lv_color_hex(0x444444), LV_PART_MAIN);
-        }
-
-        // AMS1 Name
-        if (id(ams1_name).has_state()) {
-          lv_label_set_text(id(ams1_name_label), id(ams1_name).state.c_str());
-        } else {
-          lv_label_set_text(id(ams1_name_label), "--");
-        }
-
-        // AMS1 Remaining Filament
-        if (id(ams1_remaining).has_state()) {
-          lv_label_set_text(id(ams1_rem_label), id(ams1_remaining).state.c_str());
-        } else {
-          lv_label_set_text(id(ams1_rem_label), "--");
-        }
