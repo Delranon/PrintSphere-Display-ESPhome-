@@ -120,6 +120,7 @@ display:
     dimensions:
       height: 466
       width: 466
+      offset_width: 6
     data_rate: 80000000
     spi_mode: MODE0
     rotation: 180 # 270 when transform (90° rotation towards USB port)
@@ -134,6 +135,10 @@ sensor:
   - platform: homeassistant
     id: nozzle_temp
     entity_id: sensor.${bambulab_printer}_nozzle_temperature
+    internal: true
+  - platform: homeassistant
+    id: nozzle_temp_l
+    entity_id: sensor.${bambulab_printer}_left_nozzle_temperature
     internal: true
   - platform: homeassistant
     id: bed_temp
@@ -292,6 +297,7 @@ lvgl:
     - label: { id: lbl_nozzle_icon, text: "\U000F0E5B", text_color: 0xFFFFFF, text_font: font_mdi_40 }
     - label: { id: lbl_bed_icon,    text: "\U000F185B", text_color: 0xFFFFFF, text_font: font_mdi_40 }
     - label: { id: lbl_nozzle, text: " --°C", text_color: 0xFFFFFF, text_font: font_dosis_32 }
+    - label: { id: lbl_nozzle_l, text: " --°C", text_color: 0xFFFFFF, text_font: font_dosis_32 }
     - label: { id: lbl_bed,    text: " --°C", text_color: 0xFFFFFF, text_font: font_dosis_32 }
     - label: { id: page2_note, text: "Preview deaktiviert", align: center, text_color: 0x888888, text_font: font_dosis_20 }
     - obj:
@@ -409,17 +415,20 @@ interval:
           // === Nozzle & Bed NUR auf Page 1 ===
           lv_obj_set_parent(id(lbl_nozzle_icon), page1);
           lv_obj_set_parent(id(lbl_nozzle),      page1);
+          lv_obj_set_parent(id(lbl_nozzle_l),    page1); // NEW
           lv_obj_set_parent(id(lbl_bed_icon),    page1);
           lv_obj_set_parent(id(lbl_bed),         page1);
           
           // Positionen wie gehabt (relativ zum Page-1-Zentrum)
           const int NOZZLE_ICON_X = -182, NOZZLE_ICON_Y = -10;
           const int NOZZLE_TEXT_X = -132, NOZZLE_TEXT_Y = -10;
+          const int NOZZLE_TEXT2_X = -132, NOZZLE_TEXT2_Y = 22;
           const int BED_ICON_X    =  110, BED_ICON_Y    = -10;
           const int BED_TEXT_X    =  160, BED_TEXT_Y    = -10;
           
           lv_obj_align(id(lbl_nozzle_icon), LV_ALIGN_CENTER, NOZZLE_ICON_X, NOZZLE_ICON_Y);
           lv_obj_align(id(lbl_nozzle),      LV_ALIGN_CENTER, NOZZLE_TEXT_X, NOZZLE_TEXT_Y);
+          lv_obj_align(id(lbl_nozzle_l),    LV_ALIGN_CENTER, NOZZLE_TEXT2_X, NOZZLE_TEXT2_Y);
           lv_obj_align(id(lbl_bed_icon),    LV_ALIGN_CENTER, BED_ICON_X, BED_ICON_Y);
           lv_obj_align(id(lbl_bed),         LV_ALIGN_CENTER, BED_TEXT_X, BED_TEXT_Y);
 
@@ -845,7 +854,6 @@ interval:
             lv_obj_set_style_text_color(id(lbl_status), lv_color_hex(0xFFFFFF), LV_PART_MAIN);
           }
 
-
       - lvgl.label.update:
           id: lbl_remaining
           text: !lambda |-
@@ -856,20 +864,28 @@ interval:
             std::string stg = id(current_stage).has_state() ? lower(id(current_stage).state) : "";
             bool done_strict = ((ps == "finish" || ps == "finished" || ps.find("finish") != std::string::npos)
                                 && (stg.find("idle") != std::string::npos)
-                                && (p == 100));
+                               && (p == 100));
             if (done_strict) {
               return std::string("Done");
             }
             if (id(remaining_time).has_state()) {
-              int minutes = (int) id(remaining_time).state;
-              if (minutes < 0) minutes = 0;
-              int h = minutes / 60, m = minutes % 60;
+              float v = (float) id(remaining_time).state;
+              if (v < 0) v = 0;
+              int total_minutes = 0;
+              // wenn Wert Nachkommastellen hat, als Stunden interpretieren, sonst als Minuten
+              if (std::fabs(v - (int)v) > 0.001f) {
+                total_minutes = (int)(v * 60.0f); // truncieren, nicht runden
+              } else {
+                total_minutes = (int)v;
+              }
+              int h = total_minutes / 60;
+              int m = total_minutes % 60;
               char buf[32];
-              if (h > 0) snprintf(buf, sizeof(buf), "%dh %dm", h, m);
-              else       snprintf(buf, sizeof(buf), "%dm", m);
+              snprintf(buf, sizeof(buf), "%dh %02dm", h, m); // z.B. "3h 40m" oder "0h 43m"
               return std::string(buf);
             }
             return std::string("--m");
+
       - lambda: |-
           // Farben konstant
           lv_obj_set_style_text_color(id(lbl_remaining),      lv_color_hex(0x87CEEB), LV_PART_MAIN);
@@ -907,7 +923,18 @@ interval:
           id: lbl_nozzle
           text: !lambda |-
             if (id(nozzle_temp).has_state()) {
-              char buf[24]; snprintf(buf, sizeof(buf), " %d°C", (int) id(nozzle_temp).state);
+              char buf[24]; snprintf(buf, sizeof(buf), " %3d°C", (int) id(nozzle_temp).state);
+              return std::string(buf);
+            }
+            return std::string(" --°C");
+      - lambda: |-
+          lv_obj_set_style_text_color(id(lbl_nozzle), lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+
+      - lvgl.label.update:
+          id: lbl_nozzle_l
+          text: !lambda |-
+            if (id(nozzle_temp_l).has_state()) {
+              char buf[24]; snprintf(buf, sizeof(buf), " %3d°C", (int) id(nozzle_temp_l).state);
               return std::string(buf);
             }
             return std::string(" --°C");
