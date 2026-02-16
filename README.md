@@ -58,6 +58,7 @@ substitutions:
 **Sensors (optional, extra info)**
 
 - `sensor.<printer>_nozzle_temperature`
+- `sensor.<printer>_left_nozzle_temperature`
 - `sensor.<printer>_bed_temperature`
 - `sensor.<printer>_remaining_time`
 - `sensor.<printer>_current_layer`
