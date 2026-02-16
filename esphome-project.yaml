@@ -230,47 +230,47 @@ text_sensor:
   - platform: homeassistant
     id: ams1_color
     entity_id: sensor.${bambulab_printer}_ams_1_tray_1 #AMS 1 Tray 1
-    attribute: Color
+    attribute: color
     internal: true
   - platform: homeassistant
     id: ams1_name
     entity_id: sensor.${bambulab_printer}_ams_1_tray_1
-    attribute: Name
+    attribute: type
     internal: true
   - platform: homeassistant
     id: ams1_remaining
     entity_id: sensor.${bambulab_printer}_ams_1_tray_1
-    attribute: Remaining filament
+    attribute: remain
     internal: true
   - platform: homeassistant
     id: ams2_color
     entity_id: sensor.${bambulab_serial}_ams_2_tray_1
-    attribute: Color
+    attribute: color
     internal: true
   - platform: homeassistant
     id: ams2_name
     entity_id: sensor.${bambulab_serial}_ams_2_tray_1 #AMS 2 Tray 1
-    attribute: Name
+    attribute: type
     internal: true
   - platform: homeassistant
     id: ams2_remaining
     entity_id: sensor.${bambulab_serial}_ams_2_tray_1
-    attribute: Remaining filament
+    attribute: remain
     internal: true
   - platform: homeassistant
     id: ams128_color
     entity_id: sensor.${bambulab_serial}_ams_128_tray_1 #AMS HT
-    attribute: Color
+    attribute: color
     internal: true
   - platform: homeassistant
     id: ams128_name
     entity_id: sensor.${bambulab_serial}_ams_128_tray_1
-    attribute: Name
+    attribute: type
     internal: true
   - platform: homeassistant
     id: ams128_remaining
     entity_id: sensor.h${bambulab_serial}_ams_128_tray_1
-    attribute: Remaining filament
+    attribute: remain
     internal: true
 
 binary_sensor:
@@ -1205,12 +1205,12 @@ interval:
   - interval: 1s
     then:
     - lambda: |-
-        // AMS1 Swatch Color aktualisieren
+        // Farbe parsen (nimmt immer die ersten 6 Hex Zeichen nach '#')
         if (id(ams1_color).has_state()) {
-          std::string c = id(ams1_color).state; // z.B. "#FFFFFF"
+          std::string c = id(ams1_color).state; // z.B. "#FFFFFFFF" oder "#RRGGBB"
           if (c.size() >= 7 && c[0] == '#') {
-            std::string hex = c.substr(1, 6);
-            uint32_t col = (uint32_t)strtoul(hex.c_str(), nullptr, 16);
+            std::string hex6 = c.substr(1,6); // immer RRGGBB
+            uint32_t col = (uint32_t)strtoul(hex6.c_str(), nullptr, 16);
             lv_obj_set_style_bg_color(id(ams1_swatch), lv_color_hex(col), LV_PART_MAIN);
           } else {
             lv_obj_set_style_bg_color(id(ams1_swatch), lv_color_hex(0x888888), LV_PART_MAIN);
@@ -1219,16 +1219,49 @@ interval:
           lv_obj_set_style_bg_color(id(ams1_swatch), lv_color_hex(0x444444), LV_PART_MAIN);
         }
 
-        // AMS1 Name
+        // Name setzen
         if (id(ams1_name).has_state()) {
           lv_label_set_text(id(ams1_name_label), id(ams1_name).state.c_str());
         } else {
           lv_label_set_text(id(ams1_name_label), "--");
         }
 
-        // AMS1 Remaining Filament
+        // Remaining anzeigen
         if (id(ams1_remaining).has_state()) {
           lv_label_set_text(id(ams1_rem_label), id(ams1_remaining).state.c_str());
         } else {
           lv_label_set_text(id(ams1_rem_label), "--");
         }
+
+        // AMS2 Swatch Color
+        if (id(ams2_color).has_state()) {
+          std::string c = id(ams2_color).state;
+          if (c.size() >= 7 && c[0] == '#') {
+            std::string hex = c.substr(1,6);
+            uint32_t col = (uint32_t)strtoul(hex.c_str(), nullptr, 16);
+            lv_obj_set_style_bg_color(id(ams2_swatch), lv_color_hex(col), LV_PART_MAIN);
+          } else {
+            lv_obj_set_style_bg_color(id(ams2_swatch), lv_color_hex(0x888888), LV_PART_MAIN);
+          }
+        } else {
+          lv_obj_set_style_bg_color(id(ams2_swatch), lv_color_hex(0x444444), LV_PART_MAIN);
+        }
+
+        // AMS2 Name
+        if (id(ams2_name).has_state()) {
+          lv_label_set_text(id(ams2_name_label), id(ams2_name).state.c_str());
+        } else {
+          lv_label_set_text(id(ams2_name_label), "--");
+        }
+
+        // AMS2 Remaining
+        if (id(ams2_remaining).has_state()) {
+          lv_label_set_text(id(ams2_rem_label), id(ams2_remaining).state.c_str());
+        } else {
+          lv_label_set_text(id(ams2_rem_label), "--");
+        }
+
+    #    // optional Debug
+    #    ESP_LOGD("ams_dbg", "ams1_name -> '%s'", id(ams1_name).has_state() ? id(ams1_name).state.c_str() : "<no>");
+    #    ESP_LOGD("ams_dbg", "ams1_color -> '%s'", id(ams1_color).has_state() ? id(ams1_color).state.c_str() : "<no>");
+    #    ESP_LOGD("ams_dbg", "ams1_remain -> '%s'", id(ams1_remaining).has_state() ? id(ams1_remaining).state.c_str() : "<no>");
