@@ -145,6 +145,10 @@ sensor:
     entity_id: sensor.${bambulab_printer}_bed_temperature
     internal: true
   - platform: homeassistant
+    id: chamber_temp
+    entity_id: sensor.${bambulab_printer}_chamber_temperature
+    internal: true
+  - platform: homeassistant
     id: remaining_time
     entity_id: sensor.${bambulab_printer}_remaining_time
     internal: true
@@ -160,7 +164,7 @@ sensor:
 online_image:
   - id: ha_preview
     # Start-URL ist egal – wir überschreiben sie gleich via set_url
-    url: "${homeassistant_url}/api/image_proxy/image.${bambulab_printer}_titelbild"
+    url: "${homeassistant_url}/api/image_proxy/image.${bambulab_printer}_cover_image"
     format: PNG
     type: RGB565
     resize: 420x420
@@ -293,12 +297,15 @@ lvgl:
     - label: { id: lbl_pct, text: "--%", align: center, x: 0, y: -170, text_color: 0xFFFFFF, text_font: font_dosis_40 }
     - label: { id: lbl_layer, text: "Layer: -- / --", text_color: 0xDDDDDD, text_font: font_dosis_32 }
     - label: { id: lbl_status, text: "Waiting for Data...", text_color: 0xFFFFFF, text_font: font_dosis_32 }
-    #- label: { id: lbl_remaining, text: "Rest: --m", text_color: 0x87CEEB, text_font: font_dosis_40 }
     - label: { id: lbl_nozzle_icon, text: "\U000F0E5B", text_color: 0xFFFFFF, text_font: font_mdi_40 }
+    - label: { id: lbl_nozzle_R,    text: "R",        text_color: 0xFFFFFF, text_font: font_dosis_32 }
+    - label: { id: lbl_nozzle_L,    text: "L",        text_color: 0xFFFFFF, text_font: font_dosis_32 }
+    - label: { id: lbl_nozzle,      text: " --°C",    text_color: 0xFFFFFF, text_font: font_dosis_32 }
+    - label: { id: lbl_nozzle_l,    text: " --°C",    text_color: 0xFFFFFF, text_font: font_dosis_32 }  
     - label: { id: lbl_bed_icon,    text: "\U000F185B", text_color: 0xFFFFFF, text_font: font_mdi_40 }
-    - label: { id: lbl_nozzle, text: " --°C", text_color: 0xFFFFFF, text_font: font_dosis_32 }
-    - label: { id: lbl_nozzle_l, text: " --°C", text_color: 0xFFFFFF, text_font: font_dosis_32 }
     - label: { id: lbl_bed,    text: " --°C", text_color: 0xFFFFFF, text_font: font_dosis_32 }
+    - label: { id: lbl_chamber_icon, text: "\U000F01A7", text_color: 0xFFFFFF, text_font: font_mdi_40 }
+    - label: { id: lbl_chamber,    text: " --°C", text_color: 0xFFFFFF, text_font: font_dosis_32 }
     - label: { id: page2_note, text: "Preview deaktiviert", align: center, text_color: 0x888888, text_font: font_dosis_20 }
     - obj:
         id: row_remaining
@@ -342,7 +349,7 @@ font:
     id: font_mdi_40
     size: 40
     bpp: 4
-    glyphs: ["\U000F144E", "\U000F0E5B", "\U000F185B"]  # mdiClockTimeFourOutline
+    glyphs: ["\U000F144E", "\U000F0E5B", "\U000F185B", "\U000F01A7"]  # mdiClockTimeFourOutline
 
 
 
@@ -416,22 +423,32 @@ interval:
           lv_obj_set_parent(id(lbl_nozzle_icon), page1);
           lv_obj_set_parent(id(lbl_nozzle),      page1);
           lv_obj_set_parent(id(lbl_nozzle_l),    page1); // NEW
+          lv_obj_set_parent(id(lbl_nozzle_R),    page1); // Neu, falls nicht gesetzt
+          lv_obj_set_parent(id(lbl_nozzle_L),    page1); // Neu, falls nicht gesetzt
           lv_obj_set_parent(id(lbl_bed_icon),    page1);
           lv_obj_set_parent(id(lbl_bed),         page1);
-          
+          lv_obj_set_parent(id(lbl_chamber_icon), page1);
+          lv_obj_set_parent(id(lbl_chamber),      page1);
+
           // Positionen wie gehabt (relativ zum Page-1-Zentrum)
-          const int NOZZLE_ICON_X = -182, NOZZLE_ICON_Y = -10;
-          const int NOZZLE_TEXT_X = -132, NOZZLE_TEXT_Y = -10;
-          const int NOZZLE_TEXT2_X = -132, NOZZLE_TEXT2_Y = 22;
-          const int BED_ICON_X    =  110, BED_ICON_Y    = -10;
-          const int BED_TEXT_X    =  160, BED_TEXT_Y    = -10;
-          
+          const int NOZZLE_ICON_X   = -182, NOZZLE_ICON_Y   = -10;
+          const int NOZZLE_TEXT_X   = -132, NOZZLE_TEXT_Y   = -10;
+          const int NOZZLE_TEXT2_X  = -132, NOZZLE_TEXT2_Y  =  25;
+          const int NOZZLE_UNIT_OFFSET = 56;
+          const int BED_ICON_X      =  110, BED_ICON_Y      = -10;
+          const int BED_TEXT_X      =  160, BED_TEXT_Y      = -10;
+          const int BED_ICON2_X     =  110, BED_ICON2_Y     =  25;
+          const int BED_TEXT2_X     =  160, BED_TEXT2_Y     =  25;
+
           lv_obj_align(id(lbl_nozzle_icon), LV_ALIGN_CENTER, NOZZLE_ICON_X, NOZZLE_ICON_Y);
-          // swapped: nozzle_l gets the first nozzle text position, nozzle gets the second
-          lv_obj_align(id(lbl_nozzle_l),    LV_ALIGN_CENTER, NOZZLE_TEXT_X, NOZZLE_TEXT_Y);
+          lv_obj_align(id(lbl_nozzle_l),    LV_ALIGN_CENTER, NOZZLE_TEXT_X,  NOZZLE_TEXT_Y);
           lv_obj_align(id(lbl_nozzle),      LV_ALIGN_CENTER, NOZZLE_TEXT2_X, NOZZLE_TEXT2_Y);
+          lv_obj_align(id(lbl_nozzle_R),    LV_ALIGN_CENTER, NOZZLE_TEXT2_X + NOZZLE_UNIT_OFFSET, NOZZLE_TEXT2_Y);
+          lv_obj_align(id(lbl_nozzle_L),    LV_ALIGN_CENTER, NOZZLE_TEXT_X  + NOZZLE_UNIT_OFFSET, NOZZLE_TEXT_Y);
           lv_obj_align(id(lbl_bed_icon),    LV_ALIGN_CENTER, BED_ICON_X, BED_ICON_Y);
           lv_obj_align(id(lbl_bed),         LV_ALIGN_CENTER, BED_TEXT_X, BED_TEXT_Y);
+          lv_obj_align(id(lbl_chamber_icon), LV_ALIGN_CENTER, BED_ICON2_X, BED_ICON2_Y);
+          lv_obj_align(id(lbl_chamber),      LV_ALIGN_CENTER, BED_TEXT2_X, BED_TEXT2_Y);
 
           // main arc (immer oben)
           lv_obj_set_parent(id(arc_main), lv_layer_top());
@@ -448,7 +465,7 @@ interval:
           lv_obj_move_foreground(id(lbl_pct));
 
           // (Optional) Innerhalb von Page 1 die Labels nach vorn (inkl. nozzle_l)
-          for (auto obj : { id(lbl_nozzle_icon), id(lbl_nozzle_l), id(lbl_nozzle), id(lbl_bed_icon), id(lbl_bed) }) {
+          for (auto obj : { id(lbl_nozzle_icon), id(lbl_nozzle_l), id(lbl_nozzle), id(lbl_bed_icon), id(lbl_bed), id(lbl_chamber_icon), id(lbl_chamber) }) {
             lv_obj_move_foreground(obj);
           }
           // page 2
@@ -482,7 +499,7 @@ interval:
             auto set_page1_visible = [&](bool visible){
               if (p1_shown == visible) return;  // Hysterese: nur toggeln, wenn nötig
               for (auto o : { id(lbl_status), id(lbl_layer), id(row_remaining),
-                              id(lbl_nozzle_icon), id(lbl_nozzle_l), id(lbl_nozzle), id(lbl_bed_icon), id(lbl_bed) }) {
+                              id(lbl_nozzle_icon), id(lbl_nozzle_l), id(lbl_nozzle), id(lbl_bed_icon), id(lbl_bed), id(lbl_chamber_icon), id(lbl_chamber) }) {
                 if (visible) lv_obj_clear_flag(o, LV_OBJ_FLAG_HIDDEN);
                 else         lv_obj_add_flag(o,   LV_OBJ_FLAG_HIDDEN);
               }
@@ -522,7 +539,7 @@ interval:
           }, LV_EVENT_ALL, nullptr);
           {
             for (auto o : { id(lbl_status), id(lbl_layer), id(row_remaining),
-                            id(lbl_nozzle_icon), id(lbl_nozzle_l), id(lbl_nozzle), id(lbl_bed_icon), id(lbl_bed) }) {
+                            id(lbl_nozzle_icon), id(lbl_nozzle_l), id(lbl_nozzle), id(lbl_bed_icon), id(lbl_bed), id(lbl_chamber_icon), id(lbl_chamber) }) {
               lv_obj_clear_flag(o, LV_OBJ_FLAG_HIDDEN);
             }
           }
@@ -948,6 +965,17 @@ interval:
             return std::string(" --°C");
       - lambda: |-
           lv_obj_set_style_text_color(id(lbl_bed), lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+
+      - lvgl.label.update:
+          id: lbl_chamber
+          text: !lambda |-
+            if (id(chamber_temp).has_state()) {
+              char buf[24]; snprintf(buf, sizeof(buf), " %d°C", (int) id(chamber_temp).state);
+              return std::string(buf);
+            }
+            return std::string(" --°C");
+      - lambda: |-
+          lv_obj_set_style_text_color(id(lbl_chamber), lv_color_hex(0xFFFFFF), LV_PART_MAIN);
 
       # Farbe je nach "current_stage"/Status → Ziel-Farbe für den Printing-Blend
       - lambda: |-
